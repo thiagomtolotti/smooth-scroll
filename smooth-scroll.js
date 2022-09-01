@@ -4,19 +4,6 @@ class SmoothScroll {
     this.speed = speed
     this.smooth = smooth
 
-    this.requestFrame = function(){
-      return (
-        window.requestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        window.oRequestAnimationFrame ||
-        window.msRequestAnimationFrame ||
-        function(funct){
-          window.setTimeout(funct, 1000/50)
-        }
-      )
-    }
-
     this.moving = false;
     this.pos = this.target.scrollTop
     this.frame = document.body
@@ -39,6 +26,13 @@ class SmoothScroll {
   }
   get target(){
     return this._target
+  }
+
+  set moving(status){
+    this._moving = status
+  }
+  get moving(){
+    return this._moving;
   }
 
   render(){
@@ -79,12 +73,18 @@ class SmoothScroll {
     this.target.scrollTop += delta
 
     if(Math.abs(delta) > 0.5){
-      console.log(delta)
-      // this.requestFrame(this.update())
+      // this.requestFrame(this.update)
+      //Da segunda vez que faz o loop ele perde a referência do 'this'
     }else{
       this.moving = false
     }
   }
+
+  requestFrame = function(func){
+    window.requestAnimationFrame(func())
+  }
 }
+
+//https://developer.mozilla.org/pt-BR/docs/Web/API/Window/requestAnimationFrame
 
 new SmoothScroll(document, 150, 12);
