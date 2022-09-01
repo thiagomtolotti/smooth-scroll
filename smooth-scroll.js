@@ -1,16 +1,22 @@
 class SmoothScroll {
   constructor(target, speed, smooth){
+    this.target = target
     this.speed = speed
     this.smooth = smooth
 
-    this.target = target
-
-    if(this.target === document){
-      this.target = (document.scrollingElement
-                    || document.documentElement
-                    || document.body.parentNode
-                    || document.body); //cross browser support
+    this.requestFrame = function(){
+      return (
+        window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(funct){
+          window.setTimeout(funct, 1000/50)
+        }
+      )
     }
+
     this.moving = false;
     this.pos = this.target.scrollTop
     this.frame = document.body
@@ -21,34 +27,63 @@ class SmoothScroll {
     this.render()
   }
 
-  get target(){
-    return this.target
-  }
-
-  set target(target){
-    if(target === document){
-      target = (document.scrollingElement
+  set target(newTarget){
+    if(newTarget === document){
+      newTarget = (document.scrollingElement
                     || document.documentElement
                     || document.body.parentNode
                     || document.body); //cross browser support
     }
 
-    this.target = target
+    this._target = newTarget
+  }
+  get target(){
+    return this._target
   }
 
   render(){
-    this.target.addEventListener("mousewheel", this.scrolled, {passive: false })
-    this.target.addEventListener("DOMMouseScroll", this.scrolled, {passive: false })
+    this.target.addEventListener("mousewheel", e => this.scrolled(e), {passive: false })
+    this.target.addEventListener("DOMMouseScroll", e => this.scrolled(e), {passive: false })
   }
 
   scrolled(e){
     e.preventDefault();
 
-    console.log(this.target)
-
     if(this.target.style.overflowY == "hidden" || this.target.style.overflow == "hidden") return;
 
-    this.delta = 0
+    let delta = this.normalizeWheelDelta(e); //definir a função do delta
+
+    this.pos += delta * this.speed
+    this.pos = Math.max(0, Math.min(this.pos, this.target.scrollHeight - this.frame.clientHeight))
+
+    if(!this.moving) this.update(); //se está movimentando atualiza a página
+  }
+
+  normalizeWheelDelta(e){
+    if(e.detail){ //detail é os dados passados ao evento quando inicializado
+      if(e.wheelDelta){
+        return e.wheelDelta/e.detail/40 * (e.detail>0 ? 1 : -1);
+      }else{
+        return -e.detail/3 //Firefox
+      }
+    }else{
+      return -e.wheelDelta/120 //IE, Safari, Chrome
+    }
+  }
+
+  update(){
+    this.moving = true;
+
+    let delta = (this.pos - this.target.scrollTop)/this.smooth;
+
+    this.target.scrollTop += delta
+
+    if(Math.abs(delta) > 0.5){
+      console.log(delta)
+      // this.requestFrame(this.update())
+    }else{
+      this.moving = false
+    }
   }
 }
 
