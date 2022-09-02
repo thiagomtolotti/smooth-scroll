@@ -42,6 +42,7 @@ class SmoothScroll {
   scrolled(e){
     e.preventDefault();
     
+    //permite outros tipos de scroll
     this.pos = this.target.scrollTop  
 
     if(this.target.style.overflowY == "hidden" || this.target.style.overflow == "hidden") return;
