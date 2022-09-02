@@ -70,11 +70,12 @@ class SmoothScroll {
   update(){
     this.moving = true;
 
-    let delta = (this.pos - this.target.scrollTop)/this.smooth;
+    let delta = Math.round((this.pos - this.target.scrollTop)/this.smooth);
+    // console.log(Math.round(delta))
 
     this.target.scrollTop += delta
 
-    if(Math.abs(delta) > 1){
+    if(Math.abs(delta) > .5){
       this.requestFrame(this.update.bind(this))
     }else{
       this.moving = false
