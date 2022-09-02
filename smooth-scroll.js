@@ -74,7 +74,7 @@ class SmoothScroll {
 
     this.target.scrollTop += delta
 
-    if(Math.abs(delta) > 0.5){
+    if(Math.abs(delta) > 1){
       this.requestFrame(this.update.bind(this))
     }else{
       this.moving = false
