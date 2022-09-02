@@ -41,6 +41,8 @@ class SmoothScroll {
 
   scrolled(e){
     e.preventDefault();
+    
+    this.pos = this.target.scrollTop  
 
     if(this.target.style.overflowY == "hidden" || this.target.style.overflow == "hidden") return;
 
@@ -90,4 +92,4 @@ class SmoothScroll {
   }
 }
 
-new SmoothScroll(document, 150, 12);
+let smoothScroll = new SmoothScroll(document, 150, 12);
