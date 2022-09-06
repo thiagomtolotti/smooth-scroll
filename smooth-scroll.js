@@ -1,8 +1,9 @@
 class SmoothScroll {
-  constructor(target, speed, smooth){
+  constructor(target, speed, smooth) {
     this.target = target
     this.speed = speed
     this.smooth = smooth
+    this.paused = false
 
     this.moving = false;
     this.pos = this.target.scrollTop
@@ -14,84 +15,91 @@ class SmoothScroll {
     this.render()
   }
 
-  set target(newTarget){
-    if(newTarget === document){
+  set target(newTarget) {
+    if (newTarget === document) {
       newTarget = (document.scrollingElement
-                    || document.documentElement
-                    || document.body.parentNode
-                    || document.body); //cross browser support
+        || document.documentElement
+        || document.body.parentNode
+        || document.body); //cross browser support
     }
 
     this._target = newTarget
   }
-  get target(){
+  get target() {
     return this._target
   }
-  set moving(status){
+  set moving(status) {
     this._moving = status
   }
-  get moving(){
+  get moving() {
     return this._moving;
   }
-
-  render(){
-    this.target.addEventListener("mousewheel", e => this.scrolled(e), {passive: false })
-    this.target.addEventListener("DOMMouseScroll", e => this.scrolled(e), {passive: false })
+  get pause(){
+    return this._paused;
+  }
+  set pause(status){
+    this._paused = status
   }
 
-  scrolled(e){
-    e.preventDefault();
-    
-    //permite outros tipos de scroll
-    this.pos = this.target.scrollTop  
+  render() {
+    this.target.addEventListener("mousewheel", e => this.scrolled(e), { passive: false })
+    this.target.addEventListener("DOMMouseScroll", e => this.scrolled(e), { passive: false })
+  }
 
-    if(this.target.style.overflowY == "hidden" || this.target.style.overflow == "hidden") return;
+  scrolled(e) {
+    if(this.paused) return
+
+    e.preventDefault();
+
+    //permite outros tipos de scroll
+    this.pos = this.target.scrollTop
+
+    if (this.target.style.overflowY == "hidden" || this.target.style.overflow == "hidden") return;
 
     let delta = this.normalizeWheelDelta(e); //definir a função do delta
 
     this.pos += delta * this.speed
     this.pos = Math.max(0, Math.min(this.pos, this.target.scrollHeight - this.frame.clientHeight))
 
-    if(!this.moving) this.update(); //se está movimentando atualiza a página
+    if (!this.moving) this.update(); //se está movimentando atualiza a página
   }
 
-  normalizeWheelDelta(e){
-    if(e.detail){ //detail é os dados passados ao evento quando inicializado
-      if(e.wheelDelta){
-        return e.wheelDelta/e.detail/40 * (e.detail>0 ? 1 : -1);
-      }else{
-        return -e.detail/3 //Firefox
+  normalizeWheelDelta(e) {
+    if (e.detail) { //detail é os dados passados ao evento quando inicializado
+      if (e.wheelDelta) {
+        return e.wheelDelta / e.detail / 40 * (e.detail > 0 ? 1 : -1);
+      } else {
+        return -e.detail / 3 //Firefox
       }
-    }else{
-      return -e.wheelDelta/120 //IE, Safari, Chrome
+    } else {
+      return -e.wheelDelta / 120 //IE, Safari, Chrome
     }
   }
 
-  update(){
+  update() {
     this.moving = true;
 
-    let delta = Math.round((this.pos - this.target.scrollTop)/this.smooth);
-    // console.log(Math.round(delta))
+    let delta = Math.round((this.pos - this.target.scrollTop) / this.smooth);
 
     this.target.scrollTop += delta
 
-    if(Math.abs(delta) > .5){
+    if (Math.abs(delta) > .5) {
       this.requestFrame(this.update.bind(this))
-    }else{
+    } else {
       this.moving = false
     }
   }
 
-  requestFrame(func){
+  requestFrame(func) {
     window.requestAnimationFrame(func) ||
-    window.webkitRequestAnimationFrame(func) ||
-    window.mozRequestAnimationFrame(func) ||
-    window.oRequestAnimationFrame(func)||
-    window.msRequestAnimationFrame(func) ||
-    function(func) {
-      window.setTimeout(func, 1000 / 50);
-    };
+      window.webkitRequestAnimationFrame(func) ||
+      window.mozRequestAnimationFrame(func) ||
+      window.oRequestAnimationFrame(func) ||
+      window.msRequestAnimationFrame(func) ||
+      function (func) {
+        window.setTimeout(func, 1000 / 50);
+      };
   }
 }
 
-let smoothScroll = new SmoothScroll(document, 150, 12);
+let smoothScroll = new SmoothScroll(document, 175, 12);
