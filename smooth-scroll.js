@@ -1,9 +1,11 @@
+// SmoothScroll.pause() -> Pausa ou retorna o movimento
+// SmoothScroll.target = '' -> muda o elemento scrollável
+
 class SmoothScroll {
   constructor(target, speed, smooth) {
     this.target = target
     this.speed = speed
     this.smooth = smooth
-    this.paused = false
 
     this.moving = false;
     this.pos = this.target.scrollTop
@@ -34,11 +36,12 @@ class SmoothScroll {
   get moving() {
     return this._moving;
   }
-  get pause(){
+  get paused(){
+    if(this._paused == undefined) return false
     return this._paused;
   }
-  set pause(status){
-    this._paused = status
+  pause(){
+    this._paused = !this._paused
   }
 
   render() {
@@ -47,7 +50,7 @@ class SmoothScroll {
   }
 
   scrolled(e) {
-    if(this.paused) return
+    if(this._paused) return
 
     e.preventDefault();
 
@@ -56,12 +59,11 @@ class SmoothScroll {
 
     if (this.target.style.overflowY == "hidden" || this.target.style.overflow == "hidden") return;
 
-    let delta = this.normalizeWheelDelta(e); //definir a função do delta
-
+    let delta = this.normalizeWheelDelta(e);
     this.pos += delta * this.speed
     this.pos = Math.max(0, Math.min(this.pos, this.target.scrollHeight - this.frame.clientHeight))
 
-    if (!this.moving) this.update(); //se está movimentando atualiza a página
+    if (!this.moving) this.update();
   }
 
   normalizeWheelDelta(e) {
@@ -74,8 +76,9 @@ class SmoothScroll {
     } else {
       return -e.wheelDelta / 120 //IE, Safari, Chrome
     }
-  }
+  } 
 
+  //Função responsável por alterar o 'scroll' na página de fato
   update() {
     this.moving = true;
 
@@ -85,7 +88,7 @@ class SmoothScroll {
 
     if (Math.abs(delta) > .5) {
       this.requestFrame(this.update.bind(this))
-    } else {
+    }else{
       this.moving = false
     }
   }
@@ -102,4 +105,4 @@ class SmoothScroll {
   }
 }
 
-let smoothScroll = new SmoothScroll(document, 175, 12);
+let smoothScroll = new SmoothScroll(document, 120, 12);
